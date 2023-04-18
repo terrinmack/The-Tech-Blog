@@ -1,37 +1,31 @@
 const router = require('express').Router();
-const { User, Post, Comment } = require('../models');
+const { User } = require('../models');
 const withAuth = require('../utils/auth');
 
-router.get('/', async (req, res) => {
-  Post.findAll({
-    attributes: ['id', 'postTitle', 'postContent', 'createdAt'],
-    include: [
-      {
-        model: Comment,
-        attributes: ['id', 'userId', 'postId', 'commentContent', 'createdAt'],
-        include: {
-          model: User,
-          attributes: ['username']
-        }
-      },
-      {
-        model: User,
-        attributes: ['username']
-      }
-    ]
-  }).then(dbPostData => {
-    const posts = dbPostData.map(post => post.get({ plain: true }));
-    res.render('homepage', {
-      posts,
-      logged_in: req.session.logged_in,
-      username: req.session.logged_in,
+router.get('/', withAuth, async (req, res) => {
+  try {
+    const userData = await User.findAll({
+      attributes: { exclude: ['password'] },
+      order: [['name', 'ASC']],
     });
-  }).catch(err => {
-    console.log(err);
+
+    const users = userData.map((project) => project.get({ plain: true }));
+
+    res.render('homepage', {
+      users,
+      logged_in: req.session.logged_in,
+    });
+  } catch (err) {
     res.status(500).json(err);
-  });
+  }
 });
 
-
+router.get('/login', (req, res) => {
+  if (req.session.logged_in) {
+    res.redirect('/');
+    return;
+  }
+  res.render('login');
+});
 
 module.exports = router;

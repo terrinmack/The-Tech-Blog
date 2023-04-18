@@ -1,30 +1,25 @@
 const User = require('./User');
-const Post = require('./Post');
+const Post = require('./Post')
 const Comment = require('./Comment')
 
+// A user can have many post
 User.hasMany(Post, {
-    foreignKey: 'userId'
-});
-
-User.hasMany(Comment, {
-    foreignKey: 'userId'
-});
-
+    foreignKey: 'user_id',
+    onDelete: 'CASCADE',
+  });
+  
+// A post belongs to a single user
 Post.belongsTo(User, {
-    foreignKey: 'userId'
-});
-
-Post.hasMany(Comment, {
-    foreignKey: 'postId'
-});
-
-Comment.belongsTo(User, {
-    foreignKey: 'userId'
-});
+    foreignKey: 'user_id',
+  });
 
 Comment.belongsTo(Post, {
-    foreignKey: 'postId'
-});
+    foreignKey: 'post_id'
+})
 
+Post.hasMany(Comment, {
+  foreignKey: 'post_id',
+  onDelete: 'CASCADE'
+})
 
-module.exports = {User, Post, Comment}
+module.exports = { User, Post, Comment };
